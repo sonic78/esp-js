@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SmartComponent } from 'esp-js-react';
+import {ConnectableComponent} from 'esp-js-react';
 import { Router } from 'esp-js';
 import { Modal } from '../models/modal';
 
@@ -17,7 +17,7 @@ export class ModalView extends React.Component<ModalViewProps, {}> {
         return (
             <div className='modal'>
                 <div className='modal__content'>
-                    <SmartComponent modelId={modal.modelIdToDisplay} viewContext={modal.modelViewContext}/>
+                    <ConnectableComponent modelId={modal.modelIdToDisplay} viewContext={modal.modelViewContext}/>
                 </div>
             </div>
         );

@@ -1,8 +1,7 @@
 import {EspAggregateHealthIndicator} from '../../src/health/';
-import {Health, HealthIndicator} from 'esp-js/src';
+import {Health, HealthIndicator, HealthStatus} from 'esp-js';
 import {Container} from 'esp-js-di';
-import {HealthStatus} from 'esp-js';
-import {MetricFactoryImplementation} from 'esp-js-metrics/src';
+import {MetricFactoryImplementation} from 'esp-js-metrics';
 import {TestMetricFactory} from './testMetrics';
 
 class TestHealthIndicator implements HealthIndicator {

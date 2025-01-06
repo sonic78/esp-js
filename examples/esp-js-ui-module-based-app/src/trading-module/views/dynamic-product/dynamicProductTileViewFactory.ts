@@ -29,6 +29,11 @@ export class DynamicProductTileViewFactory extends ViewFactoryBase<PolimerModel<
         let polimerModel = this._router
             .modelBuilder<DynamicProductTileModel, DynamicProductPersistedState>()
             .withInitialModel(model)
+            .enableReduxDevTools({
+                // it's ok for small models to send the full model, if they get big it'll crash dev tools
+                devToolsStateSelector: immutableModel => immutableModel,
+                ignoredEvents: []
+            })
             .withViewBindings(DynamicProductTileView)
             .withStateHandlers('addProduct', new AddProductStateHandler())
             // AddProductFactoryEventTransforms:

@@ -17,8 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
-import {EventEnvelope} from '../../.dist/typings/router';
-import {ObservationStage} from '../../src';
+import {ObservationStage, EventEnvelope} from '../../src';
 
 describe('Router', () => {
 

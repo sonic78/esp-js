@@ -1,16 +1,16 @@
 import 'jest';
-import {configure, mount} from 'enzyme';
-import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
 import {App} from '../src/app';
 import * as React from 'react';
-import {WorkspaceView} from '../src/views/workspaceView';
-
-configure({adapter: new ReactSixteenAdapter()});
+import {render} from '@testing-library/react';
+// provides a set of custom jest matchers that you can use to extend jest
+// i.e. `.toBeVisible`
+import '@testing-library/jest-dom';
 
 describe('ShellBootstrapper Tests', () => {
     // This is a high level integration test to see if the example actually loads
     it('Catch all integration tests', () => {
-        const appWrapper = mount(<App />);
-        expect(appWrapper.containsMatchingElement(<WorkspaceView />)).toBeTruthy();
+        const appWrapper = render(<App />);
+        let appRoot = appWrapper.getByRole('app-root');
+        expect(appRoot).toBeInTheDocument();
     });
 });

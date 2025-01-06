@@ -1,11 +1,17 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
 
+/**
+ * @deprecated
+ */
 export interface ViewBaseProps<TModel> {
     model:TModel;
     router:Router;
 }
 
+/**
+ * @deprecated
+ */
 export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>>
     extends React.Component<TProps, any> {
     // This used to have all the model observation, that's now in esp-js-react's SmartComponent

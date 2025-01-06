@@ -31,6 +31,10 @@ export namespace utils {
         return typeof value === 'string' || value instanceof String;
     }
 
+    export function stringIsEmpty(value: any): value is string {
+        return !value || value.length === 0 ;
+    }
+
     export function isFunction(value: any): boolean {
         return typeof (value) === 'function';
     }

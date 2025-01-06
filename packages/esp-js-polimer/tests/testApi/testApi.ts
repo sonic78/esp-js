@@ -153,6 +153,25 @@ export class StateAsserts {
     }
 }
 
+export class ImmutableModelAsserts {
+    private _lastTestImmutableModel: TestImmutableModel;
+
+    constructor(private _model: PolimerModel<TestImmutableModel>) {
+
+    }
+
+    public captureCurrentImmutableModel(): this {
+        this._lastTestImmutableModel = this._model.getEspPolimerImmutableModel();
+        return this;
+    }
+
+    public immutableModelHasChanged(): this {
+        expect(this._lastTestImmutableModel).toBeDefined();
+        expect(this._lastTestImmutableModel).not.toBe(this._model.getEspPolimerImmutableModel());
+        return this;
+    }
+}
+
 export class MapStateAsserts {
     private _lastState: Map<string, TestState>;
 
@@ -323,12 +342,14 @@ export class Asserts {
     private _handlerObjectState2: StateAsserts;
     private _handlerObjectState3: StateAsserts;
     private _handlerModelState: OOModelTestStateAsserts;
+    private _immutableModelAsserts: ImmutableModelAsserts;
 
     constructor(private _router: Router, private _model: PolimerModel<TestImmutableModel>, private _testEventProcessors: TestEventProcessors, testStateHandlerModel: TestStateHandlerModel) {
         this._handlerObjectState = new StateAsserts(() => this._model.getImmutableModel().handlerObjectState);
         this._handlerObjectState2 = new StateAsserts(() => this._model.getImmutableModel().handlerObjectState2);
         this._handlerObjectState3 = new StateAsserts(() => this._model.getImmutableModel().handlerObjectState3);
         this._handlerModelState = new OOModelTestStateAsserts(() => this._model.getImmutableModel().handlerModelState, testStateHandlerModel);
+        this._immutableModelAsserts = new ImmutableModelAsserts(this._model);
     }
 
     public get handlerObjectState() {
@@ -345,6 +366,10 @@ export class Asserts {
 
     public get handlerModelState() {
         return this._handlerModelState;
+    }
+
+    public get immutableModelAsserts() {
+        return this._immutableModelAsserts;
     }
 
     public throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp): this {

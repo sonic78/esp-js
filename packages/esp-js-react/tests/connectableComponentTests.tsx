@@ -1,135 +1,118 @@
 import 'jest';
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
-import {configure, mount, ReactWrapper} from 'enzyme';
-import ReactSixteenAdapter = require('enzyme-adapter-react-16');
-import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel} from '../src';
-import {Router} from 'esp-js';
-import {observeEvent} from 'esp-js/src/decorators/observeEvent';
-import {ConnectableComponentChildProps, PublishEvent} from '../src/connectableComponent';
+import {act} from 'react';
+import {
+    connect,
+    ConnectableComponent,
+    ConnectableComponentProps,
+    PublishModelEventDelegate,
+    viewBinding,
+    MapModelToProps,
+    CreatePublishEventProps,
+} from '../src';
+import {testApi, TestApi} from './testApi/testApi';
+import {observeEvent} from 'esp-js';
+import {viewFactory} from './testApi/viewFactory';
 
-configure({adapter: new ReactSixteenAdapter()});
-
-class TestModelView1 extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return <span>View1</span>;
-    }
+interface TestModelState {
+    value: string;
+    value2: string;
+    value3: string;
+    foo: string;
 }
 
-class TestModelView2 extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return <span>View2</span>;
-    }
-}
-
-class TestModelView3 extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return <span>View3</span>;
-    }
-}
-
-@viewBinding(TestModelView1)
-@viewBinding(TestModelView3, 'alternative-view-context')
+@viewBinding(viewFactory('View1'))
+@viewBinding(viewFactory('View3'), 'alternative-view-context')
 class TestModel {
-    public value: string;
+    protected _state: TestModelState = {
+        value: 'initial-value',
+        value2: undefined,
+        value3: undefined,
+        foo: undefined
+    };
 
-    constructor() {
-        this.value = 'initial-value';
+    public get value(): string {
+        return this._state.value;
     }
 
     @observeEvent('test-event')
-    _onTestEvent(ev) {
-        this.value = ev;
+    _onTestEvent(ev: string) {
+        this._updateState({
+            value: ev
+        });
+    }
+
+    protected _updateState = (partialState: Partial<TestModelState>) => {
+        this._state = {
+            ...this._state,
+            ...partialState
+        };
     }
 }
 
 class TestModel2 extends TestModel {
-    @getEspReactRenderModel()
-    _getOtherState() {
-        return {
-            value: this.value,
-            value2: this.value,
-            value3: 'value-3'
-        } as MappedModel;
+
+    constructor() {
+        super();
+        this._updateState({
+            value: this._state.value,
+            value2: this._state.value,
+            value3: 'value-3',
+            foo: 'the-foo'
+        });
+    }
+
+    // this isn't ideal, but here we're pretending to be a PolimerModel
+    public getEspPolimerImmutableModel() {
+        return this._state;
     }
 }
 
-class TestModel3 extends TestModel {
-    getEspReactRenderModel() {
-        return {
-            value: this.value,
-            value2: this.value,
-            value3: 'value-3.1'
-        } as MappedModel;
-    }
-}
-
-interface MappedModel {
-    value: string;
-    value2: string;
-    value3: string;
-}
-
-interface TestOptions {
+interface ConnectedComponentElementCreationProperties {
+    modelId: string;
     useConnectFunction?: boolean;
     useMapModelToProps?: boolean;
     useCreatePublishEventProps?: boolean;
     useAlternativeViewContext?: boolean;
     passOtherProps?: boolean;
-    useRenderModelSelectorDecorator?: boolean;
-    useRenderModelSelectorFunction?: boolean;
+    useImmutableModelSelectorDecorator?: boolean;
+    useImmutableModelSelectorFunction?: boolean;
 }
 
-describe('ConnectableComponent', () => {
-    let router,
+describe('ConnectableComponentTests', () => {
+    let api: TestApi,
         testModel: TestModel,
-        testModel2: TestModel,
-        connectableComponentWrapper: ReactWrapper<ConnectableComponentProps<TestModel>, {}, ConnectableComponent<TestModel>>,
-        connectableComponentProps: ConnectableComponentProps<TestModel>,
-        mapModelToProps,
-        createPublishEventProps,
-        publishEventProps,
-        userAlternativeViewContext,
-        otherProps = { other1: 'other-value' };
+        testModel2: TestModel2;
 
-    function createModel(options: TestOptions) {
-        if (options.useRenderModelSelectorDecorator) {
-            return new TestModel2();
-        }
-        if (options.useRenderModelSelectorFunction) {
-            return new TestModel3();
-        }
-        return new TestModel();
-    }
+    beforeEach(() => {
+        api = testApi();
+        testModel = new TestModel();
+        testModel2 = new TestModel2();
+        api.setupModel('model-id1', testModel);
+        api.setupModel('model-id2', testModel2);
+    });
 
-    function setup(options: TestOptions) {
-        router = new Router();
-        testModel = createModel(options);
-        router.addModel('model-id', testModel);
-        router.observeEventsOn('model-id', testModel);
-        testModel2 = new TestModel();
-        router.addModel('model-id2', testModel2);
-        router.observeEventsOn('model-id2', testModel2);
-        connectableComponentProps = {
-            modelId: 'model-id'
+    const createConnectedComponentElement = (options: ConnectedComponentElementCreationProperties): React.JSX.Element => {
+        // Refactor note:
+        // These tests were ported from some very old Enzime based tests.
+        // They have been cleaned up quite a bit.
+        // The next step in the cleanup would be to largely eliminate the option parameter.
+        // It makes sense to have a function that returns the thing to render,
+        // however, having an 'options' object just binds/funnels all the tests into one confusing API.
+        // It'd be best to take a Partial<ConnectableComponentProps> and have more localized `beforeEach` calls invoke function this using new structure.
+        let connectableComponentProps: ConnectableComponentProps<TestModel> = {
+            modelId: options.modelId
         };
+        let mapModelToProps: MapModelToProps<any, any, any>;
+        let createPublishEventProps: CreatePublishEventProps<any>;
+        const otherProps = {other1: 'other-value'};
+        let publishEventProps: { publishEvent1: () => void };
+        let userAlternativeViewContext: string;
         if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel | MappedModel, publishEventProps1: any) => {
+            mapModelToProps = (model: TestModel | TestModelState, publishEventProps2: any) => {
                 return {
                     foo: model.value,
-                    publishEventProps: publishEventProps1,
+                    publishEventPropsPassedMapModelToProps: publishEventProps2 && typeof publishEventProps2.publishEvent1 === 'function',
                     ...model
                 };
             };
@@ -139,251 +122,355 @@ describe('ConnectableComponent', () => {
                 publishEvent1: () => {
                 }
             };
-            createPublishEventProps = (publishEvent: PublishEvent) => publishEventProps;
+            createPublishEventProps = (publishEvent: PublishModelEventDelegate) => publishEventProps;
         }
         if (options.useAlternativeViewContext) {
             userAlternativeViewContext = 'alternative-view-context';
         }
+        let viewElement: React.JSX.Element;
         if (options.useConnectFunction) {
-            const HotView2 = connect(
+            const TestModelView2ConnectedComponent = connect(
                 mapModelToProps,
                 createPublishEventProps
-            )(TestModelView2);
-            connectableComponentWrapper = mount(
-                <HotView2 {...otherProps}/>,
-                {context: {router}, childContextTypes: {router: PropTypes.instanceOf(Router)}}
-            );
-            connectableComponentWrapper.setProps(connectableComponentProps);
+            )(viewFactory('View2'));
+            viewElement = (<TestModelView2ConnectedComponent {...otherProps} {...connectableComponentProps}/>);
         } else {
-            connectableComponentWrapper = mount(
+            viewElement = (
                 <ConnectableComponent
                     {...connectableComponentProps}
                     mapModelToProps={mapModelToProps}
                     viewContext={userAlternativeViewContext}
                     {...otherProps}
-                />,
-                {context: {router}, childContextTypes: {router: PropTypes.instanceOf(Router)}}
+                />
             );
         }
-    }
+        return viewElement;
+    };
 
-    function publishAnEventToModel1() {
-        router.publishEvent('model-id', 'test-event', 'the-event-value');
-        expect(testModel.value).toEqual('the-event-value');
-        connectableComponentWrapper.update();
-    }
-
-    function publishAnEventToModel2() {
-        router.publishEvent('model-id2', 'test-event','the-event-value2');
-        expect(testModel2.value).toEqual('the-event-value2');
-        connectableComponentWrapper.update();
-    }
-
-    afterEach(() => {
-       // console.log(connectableComponentWrapper.debug());
-    });
+    const publishTestEvent = (modelId: string, eventData: string) => {
+        act(() => {
+            api.router.publishEvent(modelId, 'test-event', eventData);
+        });
+    };
 
     describe('ConnectableComponent via connect()', () => {
         beforeEach(() => {
-            setup({useConnectFunction: true, useMapModelToProps: true, useCreatePublishEventProps: true});
+            let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                modelId: 'model-id1',
+                useConnectFunction: true,
+                useMapModelToProps: true,
+                useCreatePublishEventProps: true
+            };
+            api.doRender(
+                createConnectedComponentElement(elementCreationProperties),
+                elementCreationProperties.modelId
+            );
         });
 
-        const getChidViewProps = () => {
-            return connectableComponentWrapper.childAt(0).childAt(0).props() as ConnectableComponentChildProps<TestModel>;
-        };
+        it('Renders the view provided to connect', () => {
+            api.asserts.view.viewNameElementTextIs('View2');
+        });
 
         describe('Child view props', () => {
-            it('passes mapped props', () => {
-                let props = getChidViewProps();
-                expect(props.foo).toEqual('initial-value');
+
+            it('renders only once', () => {
+                api.asserts.props
+                    .receivedPropCountIs(1);
             });
 
-            it('passes publishEventProps to props mapper', () => {
-                let props = getChidViewProps();
-                expect(props.publishEventProps).toBe(publishEventProps);
+            it('passes mapped props', () => {
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.foo).toBe('initial-value');
+                        }
+                    );
+            });
+
+            it('passes results of publishEventProps to mapModelToProps', () => {
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.publishEventPropsPassedMapModelToProps).toBeTruthy();
+                        }
+                    );
             });
 
             it('passes model', () => {
-                let props = getChidViewProps();
-                expect(props.model).toBe(testModel);
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.model).toBeDefined();
+                            expect(props.model instanceof TestModel).toBeTruthy();
+                        }
+                    );
             });
 
-            it('passes publishEventProps', () => {
-                let props = getChidViewProps();
-                expect(props.publishEvent1).toBeDefined();
+            it('flattens and passes results of createPublishEventProps', () => {
+                api.asserts.props
+                    .receivedPropCountIs(1)
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.publishEvent1).toBeDefined();
+                            expect(typeof props.publishEvent1).toBe('function');
+                        }
+                    );
             });
 
             it('passes other props', () => {
-                let props = getChidViewProps();
-                expect(props.other1).toEqual('other-value');
-            });
-        });
-
-        describe('View rendering', () => {
-            it('Renders the view provided to connect', () => {
-                expect(connectableComponentWrapper.containsMatchingElement(<TestModelView2/>)).toBeTruthy();
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.other1).toBeDefined();
+                            expect(props.other1).toBe('other-value');
+                        }
+                    );
             });
         });
     });
 
     describe('ConnectableComponent directly', () => {
 
-        const getChidViewProps = () => {
-            return connectableComponentWrapper.childAt(0).props() as ConnectableComponentChildProps<TestModel>;
-        };
-
         describe('Child view props', () => {
             beforeEach(() => {
-                setup({useConnectFunction: false});
+                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                    modelId: 'model-id1',
+                    useConnectFunction: false
+                };
+                api.doRender(
+                    createConnectedComponentElement(elementCreationProperties),
+                    elementCreationProperties.modelId
+                );
             });
 
             it('passes modelId', () => {
-                let props = getChidViewProps();
-                expect(props.modelId).toEqual('model-id');
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.modelId).toBe('model-id1');
+                        }
+                    );
             });
 
             it('passes router', () => {
-                let props = getChidViewProps();
-                expect(props.router).toBe(router);
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.router).toBe(api.router);
+                        }
+                    );
             });
 
             it('passes model', () => {
-                let props = getChidViewProps();
-                expect(props.model).toBe(testModel);
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.model).toBeDefined();
+                            expect(props.model instanceof TestModel).toBeTruthy();
+                        }
+                    );
             });
 
             it('passes other props', () => {
-                let props = getChidViewProps();
-                expect(props.other1).toEqual('other-value');
+                api.asserts.props
+                    .propAtIndex(
+                        0,
+                        props => {
+                            expect(props.other1).toBeDefined();
+                            expect(props.other1).toBe('other-value');
+                        }
+                    );
             });
+        });
+
+        it('arbitrary props are passed down to the child', () => {
+            api.doRender(
+                (
+                    <ConnectableComponent className={'foo-bar'} />
+                ),
+                'model-id1'
+            );
+            api.asserts.props
+                .receivedPropCountIs(1)
+                .propAtIndex(0, props => {
+                    expect(props.className).toBe('foo-bar');
+                });
         });
 
         describe('Re-renders', () => {
             beforeEach(() => {
-                setup({useConnectFunction: false});
+                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                    modelId: 'model-id1',
+                    useConnectFunction: false,
+                };
+                api.doRender(
+                    createConnectedComponentElement(elementCreationProperties),
+                    elementCreationProperties.modelId
+                );
             });
 
             it('Re-renders when model updates', () => {
-                publishAnEventToModel1();
-                let props = getChidViewProps();
-                expect(props.model.value).toBe('the-event-value');
+                publishTestEvent( 'model-id1', 'the-event-value');
+                api.asserts.props
+                    .receivedPropCountIs(2)
+                    .propAtIndex(
+                        1,
+                        props => {
+                            expect(props.model).toBeDefined();
+                            expect(props.model.value).toBe('the-event-value');
+                        }
+                    );
             });
         });
 
-        describe('Model Subscription', () => {
+        describe('Model Subscription - modelId source', () => {
+            it('subscribes to modelId via props', () => {
+                api.doRender(
+                    (
+                        <ConnectableComponent modelId={'model-id1'} />
+                    )
+                );
+                api.asserts.props
+                    .receivedPropCountIs(1)
+                    .propAtIndexHasModelId(0, 'model-id1');
+            });
+
+            it('subscribes to modelId via context', () => {
+                api.doRender(
+                    (
+                        <ConnectableComponent />
+                    ),
+                    'model-id1'
+                );
+                api.asserts.props
+                    .receivedPropCountIs(1)
+                    .propAtIndexHasModelId(0, 'model-id1');
+            });
+        });
+
+        describe('Model Subscription - when modelId changes', () => {
             beforeEach(() => {
-                setup({useConnectFunction: false});
+                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                    modelId: 'model-id1',
+                    useConnectFunction: false,
+                    useMapModelToProps: true
+                };
+                api.doRender(
+                    createConnectedComponentElement(elementCreationProperties),
+                    elementCreationProperties.modelId
+                );
             });
 
             it('Re-subscribes to new model when modelId changes', () => {
-                const newProps = {
-                    ...connectableComponentWrapper.props(),
-                    modelId: 'model-id2',
-                };
-                connectableComponentWrapper.setProps(newProps);
-                connectableComponentWrapper.update();
-                publishAnEventToModel2();
-                let props = getChidViewProps();
-                expect(props.foo).toBe('the-event-value2');
-            });
-        });
-
-        describe('Publish Event Context', () => {
-            beforeEach(() => {
-                setup({useConnectFunction: false});
-            });
-
-            // // Cant test hooks yet, will test using state below
-            // // https://github.com/enzymejs/enzyme/issues/2011
-            // xit('Can publish event via context', () => {
-            //     const childViewContext = connectableComponentWrapper.context();
-            //     let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
-            //     publishEvent('test-event', 'the-event-value');
-            //     connectableComponentWrapper.update();
-            //     let props = getChidViewProps();
-            //     expect(props.foo).toBe('the-event-value');
-            // });
-
-            // Note this is a best effort to test the context hook created via state
-            it('publishEvent set', () => {
-                const state: any = connectableComponentWrapper.state();
-                state.publishEvent('test-event', 'the-event-value');
-                connectableComponentWrapper.update();
-                let props = getChidViewProps();
-                expect(props.model.value).toBe('the-event-value');
-            });
-
-            it('publishEvent recreated on model change', () => {
-                const newProps = {
-                    ...connectableComponentWrapper.props(),
-                    modelId: 'model-id2',
-                };
-                connectableComponentWrapper.setProps(newProps);
-                connectableComponentWrapper.update();
-                const state: any = connectableComponentWrapper.state();
-                state.publishEvent('test-event', 'the-event-value');
-                connectableComponentWrapper.update();
-                let props = getChidViewProps();
-                expect(props.model.value).toBe('the-event-value');
-                expect(testModel2.value).toBe('the-event-value');
+                api.asserts.props
+                    .receivedPropCountIs(1)
+                    .propAtIndexHasModelId(0,'model-id1');
+                const element = createConnectedComponentElement({modelId: 'model-id2', useConnectFunction: false, useMapModelToProps: true});
+                api.doReRender(element, 'model-id2');
+                api.asserts.props
+                    .receivedPropCountIs(2)
+                    .propAtIndexHasModelId(1,'model-id2');
+                publishTestEvent( 'model-id2', 'the-event-value2');
+                api.asserts.props
+                    .receivedPropCountIs(3)
+                    .propAtIndexHasModelId(2,'model-id2')
+                    .propAtIndex(
+                        2,
+                        props => {
+                            expect(props.model.value).toBe('the-event-value2');
+                        }
+                    );
             });
         });
 
         describe('View rendering', () => {
             it('Renders the view found via @viewBinding', () => {
-                setup({useConnectFunction: false});
-                expect(connectableComponentWrapper.containsMatchingElement(<TestModelView1/>)).toBeTruthy();
+                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                    modelId: 'model-id1',
+                    useConnectFunction: false,
+                };
+                api.doRender(
+                    createConnectedComponentElement(elementCreationProperties),
+                    elementCreationProperties.modelId
+                );
+                api.asserts.view.viewNameElementTextIs('View1');
             });
 
             it('Renders alternative view found via @viewBinding', () => {
-                setup({useConnectFunction: false, useAlternativeViewContext: true});
-                expect(connectableComponentWrapper.containsMatchingElement(<TestModelView3/>)).toBeTruthy();
+                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
+                    modelId: 'model-id1',
+                    useConnectFunction: false,
+                    useAlternativeViewContext: true
+                };
+                api.doRender(
+                    createConnectedComponentElement(elementCreationProperties),
+                    elementCreationProperties.modelId
+                );
+                api.asserts.view.viewNameElementTextIs('View3');
+            });
+
+            it('re-renders the view when the model changes', () => {
+                api.doRender(
+                    (
+                        <ConnectableComponent />
+                    ),
+                    'model-id1'
+                );
+                api.asserts.view.viewNameElementTextIs('View1');
+                api.asserts.props.receivedPropCountIs(1);
+                act(() => {
+                    api.router.publishEvent('model-id1', 'test-event', 'changed-value');
+                });
+                api.asserts.props
+                    .receivedPropCountIs(2)
+                    .propAtIndex(1, props => {
+                        expect(props.model.value).toBe('changed-value');
+                    });
+            });
+
+            it('can pass view via prop', () => {
+                const View = viewFactory('MyPropView');
+                api.doRender(
+                    (
+                        <ConnectableComponent view={View} />
+                    ),
+                    'model-id1'
+                );
+                api.asserts.view.viewNameElementTextIs('MyPropView');
             });
         });
 
-        describe('Overriding model/state selector', () => {
-            function testModelHasBeenReplacedWithMappedModel(expectedValue3) {
-                let props = getChidViewProps();
-                let mappedModel = props.model as any as MappedModel;
-                expect(mappedModel.value2).toBe('initial-value');
-                expect(mappedModel.value3).toBe(expectedValue3);
-                publishAnEventToModel1();
-                props = getChidViewProps();
-                mappedModel = props.model as any as MappedModel;
-                expect(mappedModel.value2).toBe('the-event-value');
-            }
-
-            function testSwappedModelPassedToMapModelToPropsFunction(expectedValue3) {
-                let props = getChidViewProps();
-                expect(props.value2).toBe('initial-value');
-                expect(props.value3).toBe(expectedValue3);
-                publishAnEventToModel1();
-                props = getChidViewProps();
-                expect(props.value2).toBe('the-event-value');
-            }
-
-            describe('using @stateToRenderSelector', () => {
-                it('Swaps the model for that returned by the function decorated with a @stateToRenderSelector decorator', () => {
-                    setup({useConnectFunction: false, useRenderModelSelectorDecorator: true});
-                    testModelHasBeenReplacedWithMappedModel('value-3');
+        describe('Overriding model/state selector with @getEspPolimerImmutableModel', () => {
+            it('will select esp-js-polimer model based on const', () => {
+                api.doRender(
+                    (
+                        <ConnectableComponent />
+                    ),
+                    'model-id2'
+                );
+                api.asserts.props
+                    .receivedPropCountIs(1)
+                    .propAtIndex(0, props => {
+                        expect(props.model.value).toBe('initial-value');
+                        expect(props.model.foo).toBe('the-foo');
+                    });
+                act(() => {
+                    api.router.publishEvent('model-id2', 'test-event', 'changed-value');
                 });
-
-                it('passes the swapped model to mapModelToProps function', () => {
-                    setup({useConnectFunction: false, useRenderModelSelectorDecorator: true, useMapModelToProps: true});
-                    testSwappedModelPassedToMapModelToPropsFunction('value-3');
-                });
-            });
-
-            describe('using state to render function', () => {
-                it('Swaps the model for that returned by the function decorated with a @stateToRenderSelector decorator', () => {
-                    setup({useConnectFunction: false, useRenderModelSelectorFunction: true});
-                    testModelHasBeenReplacedWithMappedModel('value-3.1');
-                });
-
-                it('passes the swapped model to mapModelToProps function', () => {
-                    setup({useConnectFunction: false, useRenderModelSelectorFunction: true, useMapModelToProps: true});
-                    testSwappedModelPassedToMapModelToPropsFunction('value-3.1');
-                });
+                api.asserts.props
+                    .receivedPropCountIs(2)
+                    .propAtIndex(1, props => {
+                        expect(props.model.value).toBe('changed-value');
+                        expect(props.model.foo).toBe('the-foo');
+                    });
             });
         });
     });

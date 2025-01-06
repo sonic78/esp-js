@@ -1,10 +1,7 @@
-import * as React from 'react';
-import {ConnectableComponent, RouterProvider} from 'esp-js-react';
 import {AppDefaultStateProvider, Level, Logger, LoggingConfig, ModelBase, StatefulRegion, SystemContainerConst, ViewFactoryBase} from 'esp-js-ui';
 import {WorkspaceModel} from './views/workspace/model/workspaceModel';
 import {ShellModuleContainerConst} from './shellModuleContainerConst';
 import {RegionNames} from './regionNames';
-import {Router} from 'esp-js';
 import {Shell, Region} from 'esp-js-ui';
 import {DefaultStateProvider} from '../defaultStateProvider';
 import {AppPreferencesModel, AppPreferencesViewFactory} from './views';
@@ -17,11 +14,11 @@ LoggingConfig.defaultLoggerConfig.dumpAdditionalDetailsToConsole = true;
 const _log = Logger.create('AppShell');
 
 export class AppShell extends Shell {
-    private _rootElement: any;
     private _viewFactoryGroupId: string = uuid.v4();
+    private _workspaceModelId: string;
 
-    get rootElement() {
-        return this._rootElement;
+    get workspaceModelId(): string {
+        return this._workspaceModelId;
     }
 
     get stateSavingEnabled(): boolean {
@@ -97,27 +94,13 @@ export class AppShell extends Shell {
 
     start() {
         super.start();
-        this.container.resolve<Router>(SystemContainerConst.router).enableDiagnosticLogging = true;
-        this._rootElement = this._createRootElement();
+        _log.verbose('Starting');
+        let workspaceModel = this.container.resolve<WorkspaceModel>(ShellModuleContainerConst.workspace_model, this);
+        workspaceModel.observeEvents();
+        this._workspaceModelId = workspaceModel.modelId;
     }
 
     getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
         return this.container.resolveGroup(this._viewFactoryGroupId);
-    }
-
-    _createRootElement(): any {
-        // note we inject the Shell itself into the WorkspaceModel so it can carry out
-        // loading based on business logic
-        let workspaceModel = this.container.resolve<WorkspaceModel>(ShellModuleContainerConst.workspace_model, this);
-        let router = this.container.resolve<Router>(SystemContainerConst.router);
-        workspaceModel.observeEvents();
-        _log.verbose('Displaying UI');
-        return (
-            <RouterProvider router={router}>
-                <div>
-                    <ConnectableComponent modelId={workspaceModel.modelId}/>
-                </div>
-            </RouterProvider>
-        );
     }
 }

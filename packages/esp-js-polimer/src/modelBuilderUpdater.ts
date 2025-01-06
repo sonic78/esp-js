@@ -1,5 +1,5 @@
 import {Router, Guard, isEspDecoratedObject, utils} from 'esp-js';
-import {PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
+import {DevToolsConfig, DevToolsStateSelector, PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
 import {ImmutableModel} from './immutableModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {StateHandlerModel} from './stateHandlerModel';
@@ -11,6 +11,7 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     protected _stateHandlerModelsConfig: Map<string, StateHandlerModelMetadata> = new Map();
     protected _stateHandlerConfig: Map<string, StateHandlerConfiguration[]> = new Map();
     protected _eventTransformConfig: EventTransformConfiguration[] = [];
+    protected _devToolsConfig: DevToolsConfig<TModel>;
 
     /**
      * @deprecated use withStateHandlers()
@@ -107,6 +108,15 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
         });
         return this;
     }
+
+    /**
+     * Enables Redux dev tools support (if the extension is on the browser and it's enabled for esp-js via ?espReduxDevToolsEnabled).
+     *
+     */
+    enableReduxDevTools(config: DevToolsConfig<TModel>): this {
+        this._devToolsConfig = config;
+        return this;
+    }
 }
 
 export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelState = {}> extends PolimerModelBuilderUpdaterBase<TModel> {
@@ -181,6 +191,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
                 modelPreEventProcessor: this._modelPreEventProcessor,
                 modelPostEventProcessor: this._modelPostEventProcessor,
                 stateSaveHandler: this._stateSaveHandler,
+                devToolsConfig: this._devToolsConfig
             }
         );
     }

@@ -1,11 +1,12 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {AppShell} from './shell/appShell';
 import './css/espdemo.css';
+import {AppShellView} from './shell/views/shell/shellView';
 
 let appShell = new AppShell();
 appShell.start();
-ReactDOM.render(
-    appShell.rootElement,
-    document.getElementById('root')
-);
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<AppShellView router={appShell.router} workspaceModelId={appShell.workspaceModelId} />);

@@ -16,33 +16,36 @@
  */
 // notice_end
 
-import * as esp from 'esp-js';
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
-import { createViewForModel } from './viewBindingDecorator';
+import {createViewForModel} from './viewBindingDecorator';
+import {useRouter} from './espRouterContextProvider';
 
 export interface ViewBinderProps {
     model: any;
-    viewContext: string;
+    viewContext?: string;
+    /**
+     * ...rest props, these will be passed to the child
+     */
+    [key: string]: any;
 }
 
-export class ViewBinder extends React.Component<ViewBinderProps> {
-
-    static contextTypes = {
-        router: PropTypes.instanceOf(esp.Router).isRequired
-    };
-
-    render() {
-        if(this.props.model) {
-            let {model, viewContext, ...other} = this.props;
-            let newProps = Object.assign({}, { model: this.props.model, router:this.context.router }, other);
-            return createViewForModel(
-                this.props.model,
-                newProps,
-                this.props.viewContext,
-                null
-            );
-        }
-        return null;
+/**
+ * Takes a model with a @viewBinding decorator and dynamically crates the view specified by the decorator
+ */
+export const ViewBinder: React.FC<ViewBinderProps> = ({model, viewContext, ...rest}) => {
+    if (model) {
+        const router = useRouter();
+        const newProps = {
+            model,
+            router,
+            ...rest
+        };
+        return createViewForModel(
+            model,
+            newProps,
+            viewContext,
+            null
+        );
     }
-}
+    return null;
+};

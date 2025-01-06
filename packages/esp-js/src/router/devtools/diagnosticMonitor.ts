@@ -19,29 +19,25 @@
 import {DisposableBase} from '../../system/disposables';
 import {ModelAddress} from '../modelAddress';
 
-/**
- * hooks onto a global exposed by esp-js-devtools and forwards diagnostics to that
- */
 export interface DiagnosticMonitor extends DisposableBase {
-    getSummary(): string;
     addModel(modelId: string): void;
     removeModel(modelId: string): void;
-    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType, event): void;
-    broadcastEvent(eventType): void;
-    executingEvent(eventType): void;
+    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void;
+    broadcastEvent(eventType: string): void;
+    executingEvent(eventType: string): void;
     runAction(modelId: string): void;
-    eventEnqueued(modelId: string, entityKey: string, eventType: string): void;
+    eventEnqueued(modelId: string, entityKey: string, eventType: string, event: any): void;
     dispatchLoopStart(): void;
-    startingModelEventLoop(modelId, entityKey: string, initiatingEventType): void;
+    startingModelEventLoop(modelId: string, entityKey: string, initiatingEventType: string): void;
     preProcessingModel(): void;
     dispatchingEvents(): void;
     dispatchingAction(): void;
-    dispatchingEvent(eventType: string, stage): void;
-    dispatchingViaDirective(functionName): void;
+    dispatchingEvent(eventType: string, stage: string): void;
+    dispatchingViaDirective(functionName: string): void;
     finishDispatchingEvent(): void;
     postProcessingModel(): void;
     endingModelEventLoop(): void;
-    dispatchingModelUpdates(modelId: string): void;
+    dispatchingModelUpdates(modelId: string, model: any): void;
     dispatchLoopEnd(): void;
-    halted(modelIds, err): void;
+    halted(modelIds: string[], err: string): void;
 }

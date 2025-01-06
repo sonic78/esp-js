@@ -48,6 +48,10 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         return this._container;
     }
 
+    public get router(): Router {
+        return this._router;
+    }
+
     /**
      * if true automatic state saving for all the modules models using the provided StateService will apply
      */

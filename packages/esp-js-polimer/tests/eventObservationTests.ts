@@ -1,8 +1,7 @@
-import {ObservationStage} from 'esp-js';
+import {ObservationStage, EventEnvelope} from 'esp-js';
 import {PolimerTestApi, PolimerTestApiBuilder, StateHandlerConfig} from './testApi/testApi';
 import {defaultTestStateFactory, EventConst, TestEvent, TestImmutableModel} from './testApi/testModel';
 import {TestStateObjectHandler} from './testApi/stateHandlers';
-import {EventEnvelope} from 'esp-js/src';
 
 describe('Event Observation', () => {
     let api: PolimerTestApi;
@@ -13,10 +12,12 @@ describe('Event Observation', () => {
                 .withStateHandlers()
                 .build();
             api.asserts.handlerObjectState.captureCurrentState();
+            api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
         });
 
         afterEach(() => {
             api.asserts.handlerObjectState.stateInstanceHasChanged();
+            api.asserts.immutableModelAsserts.immutableModelHasChanged();
         });
 
         it('can receives events at preview stage', () => {
@@ -68,10 +69,12 @@ describe('Event Observation', () => {
                 .withStateHandlerModel()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
+            api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
         });
 
         afterEach(() => {
             api.asserts.handlerModelState.stateInstanceHasChanged();
+            api.asserts.immutableModelAsserts.immutableModelHasChanged();
         });
 
         it('can receives events at preview stage', () => {
@@ -125,11 +128,13 @@ describe('Event Observation', () => {
                 .build();
             api.asserts.handlerObjectState.captureCurrentState();
             api.asserts.handlerModelState.captureCurrentState();
+            api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
         });
 
         afterEach(() => {
             api.asserts.handlerObjectState.stateInstanceHasChanged();
             api.asserts.handlerModelState.stateInstanceHasChanged();
+            api.asserts.immutableModelAsserts.immutableModelHasChanged();
         });
 
         it('updates all states that observed the event', () => {
@@ -247,6 +252,7 @@ describe('Event Observation', () => {
                     .withStateHandlers()
                     .build();
                 api.asserts.handlerObjectState.captureCurrentState();
+                api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
             });
 
             afterEach(() => {
@@ -305,10 +311,12 @@ describe('Event Observation', () => {
                     .withStateHandlerModel()
                     .build();
                 api.asserts.handlerModelState.captureCurrentState();
+                api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
             });
 
             afterEach(() => {
                 api.asserts.handlerModelState.stateInstanceHasChanged();
+                api.asserts.immutableModelAsserts.immutableModelHasChanged();
             });
 
             it('dispatches event for each observation stage', () => {
@@ -365,6 +373,7 @@ describe('Event Observation', () => {
                 .withStateHandlers()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
+            api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
 
             api.actor.publishEventWhichFiltersAtPreviewStage(EventConst.event5);
             api.asserts.handlerModelState.receivedEventsAll().eventCountIs(0);
@@ -424,12 +433,14 @@ describe('Event Observation', () => {
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
             api.asserts.handlerObjectState.captureCurrentState();
+            api.asserts.immutableModelAsserts.captureCurrentImmutableModel();
         });
 
         it('mutative state changes result in a new state object', () => {
             api.actor.publishEvent(EventConst.event1);
             api.asserts.handlerModelState.stateInstanceHasChanged();
             api.asserts.handlerObjectState.stateInstanceHasChanged();
+            api.asserts.immutableModelAsserts.immutableModelHasChanged();
         });
 
         it('can replace the state with a returned object', () => {
@@ -437,6 +448,7 @@ describe('Event Observation', () => {
             api.actor.publishEvent(EventConst.event5, {replacementState: nextState});
             api.asserts.handlerObjectState.stateInstanceHasChanged(nextState);
             api.asserts.handlerModelState.stateInstanceHasChanged(); // doesn't support swapping of state, doesn't use immer
+            api.asserts.immutableModelAsserts.immutableModelHasChanged();
         });
     });
 });

@@ -1,7 +1,7 @@
 import {Router} from 'esp-js';
 import {TestStateObjectHandler, TestStateObjectHandlerForMapState} from './testApi/stateHandlers';
 import {defaultModelFactory, defaultTestStateFactory, EventConst, TestImmutableModel} from './testApi/testModel';
-import {MapStateAsserts} from './testApi/testApi';
+import {ImmutableModelAsserts, MapStateAsserts} from './testApi/testApi';
 
 describe('Map Tests', () => {
     let router: Router;
@@ -98,23 +98,30 @@ describe('Map Tests', () => {
             .withStateHandlers('testMapState', new TestStateObjectHandler({router}))
             .registerWithRouter();
 
+        let immutableModelAsserts = new ImmutableModelAsserts(polimerModel);
         let mapStateAsserts = new MapStateAsserts(() => polimerModel.getImmutableModel().testMapState);
         let state1Asserts = mapStateAsserts.entity('id-1').captureCurrentState();
         let state2Asserts = mapStateAsserts.entity('id-2').captureCurrentState();
         let state3Asserts = mapStateAsserts.entity('id-3').captureCurrentState();
 
+        immutableModelAsserts.captureCurrentImmutableModel();
         mapStateAsserts.captureCurrentState();
         router.publishEvent({modelId: 'modelId', entityKey: 'id-1'}, EventConst.event1, {data: 'the-data1'});
         // make sure the Map itself has been mutated
         mapStateAsserts.stateInstanceHasChanged();
+        immutableModelAsserts.immutableModelHasChanged();
 
+        immutableModelAsserts.captureCurrentImmutableModel();
         mapStateAsserts.captureCurrentState();
         router.publishEvent({modelId: 'modelId', entityKey: 'id-2'}, EventConst.event1, {data: 'the-data2'});
         mapStateAsserts.stateInstanceHasChanged();
+        immutableModelAsserts.immutableModelHasChanged();
 
+        immutableModelAsserts.captureCurrentImmutableModel();
         mapStateAsserts.captureCurrentState();
         router.publishEvent({modelId: 'modelId', entityKey: 'id-3'}, EventConst.event1, {data: 'the-data3'});
         mapStateAsserts.stateInstanceHasChanged();
+        immutableModelAsserts.immutableModelHasChanged();
 
         state1Asserts
             // make sure the item in the map has been mutated

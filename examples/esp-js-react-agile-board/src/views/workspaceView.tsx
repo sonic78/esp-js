@@ -6,21 +6,12 @@ import { StoryListItemView } from './storyListItemView';
 import { StoryDetailsView } from './storyDetailsView';
 import { Router } from 'esp-js';
 import { Workspace } from '../models/workspace';
-import { shouldUpdateMixin } from 'esp-js-react';
 
 export interface WorkspaceViewProps {
     model?: Workspace;
     router?: Router;
 }
 
-@shouldUpdateMixin((nextProps: WorkspaceViewProps) => {
-    return {
-        epics: nextProps.model.epics,
-        displayedStories: nextProps.model.displayedStories,
-        selectedStory: nextProps.model.selectedStory,
-        showAllStoriesButton: nextProps.model.showAllStoriesButton
-    };
-})
 export class WorkspaceView extends React.Component<WorkspaceViewProps, {}> {
     render() {
         let workspace = this.props.model;

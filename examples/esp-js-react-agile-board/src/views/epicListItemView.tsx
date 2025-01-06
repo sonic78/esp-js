@@ -4,22 +4,12 @@ import {EventConst} from '../eventConst';
 import {EpicLabel} from './epicLabel';
 import {Epic} from '../models/epic';
 import {Router} from 'esp-js';
-import {shouldUpdateMixin} from 'esp-js-react';
 
 export interface EpicListItemViewProps {
     epic: Epic;
     router: Router;
 }
 
-@shouldUpdateMixin((nextProps: EpicListItemViewProps) => {
-    return {
-        name: nextProps.epic.name,
-        isSelected: nextProps.epic.isSelected,
-        colour: nextProps.epic.colour,
-        stories: nextProps.epic.stories,
-        doneCount: nextProps.epic.doneCount
-    };
-})
 export class EpicListItemView extends React.Component<EpicListItemViewProps, {}> {
     render() {
         let epic = this.props.epic;

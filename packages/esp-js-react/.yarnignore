@@ -6,7 +6,6 @@ examples/
 node_modules/
 *.log
 esp-js-*.tgz
-src
 tests
 typings
 !.dist/typings

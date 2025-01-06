@@ -19,7 +19,6 @@
 import {Guard} from '../system';
 import {Status} from './status';
 import {ModelRecord} from './modelRecord';
-import {CompositeDiagnosticMonitor} from './devtools';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {
@@ -30,7 +29,7 @@ export class State {
     private _circularEventDispatchLimit = 10000;
     private _currentDispatchCount = 0;
 
-    public constructor(private _compositeDiagnosticMonitor: CompositeDiagnosticMonitor) {
+    public constructor() {
         this._currentStatus = Status.Idle;
         this._eventsDispatched = [];
     }
@@ -68,13 +67,7 @@ export class State {
     public moveToEventDispatch() {
         this._currentDispatchCount++;
         if (this._currentDispatchCount >= this._circularEventDispatchLimit) {
-            if (this._compositeDiagnosticMonitor.enableDiagnosticLogging) {
-                throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount} events processed :\r\n${this._compositeDiagnosticMonitor.getLoggingDiagnosticSummary()}`);
-            } else {
-                throw new Error(
-                    `Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}. To enable diagnostic logging for a more detailed dump of what events were in flight set 'yourRouterInstance.enableDiagnosticLogging = true'`
-                );
-            }
+            throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}.`);
         }
         this._currentStatus = Status.EventProcessorDispatch;
     }

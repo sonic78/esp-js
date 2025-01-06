@@ -18,72 +18,67 @@
 
 import {DiagnosticMonitor} from './diagnosticMonitor';
 import {DisposableBase} from '../../system/disposables';
+import { ModelAddress } from '../modelAddress';
 
 export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
-    addModel() {
+    addModel(modelId: string): void {
+        
     }
-
-    removeModel() {
+    removeModel(modelId: string): void {
+        
     }
-
-    getSummary() {
-        return 'Call router.enableDiagnostics() to enable diagnostics. If in a browser use esp-js-devtools.';
+    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void {
+        
     }
-
-    publishEvent() {
+    broadcastEvent(eventType: string): void {
+        
     }
-
-    broadcastEvent() {
+    executingEvent(eventType: string): void {
+        
     }
-
-    executingEvent() {
+    runAction(modelId: string): void {
+        
     }
-
-    runAction() {
+    eventEnqueued(modelId: string, entityKey: string, eventType: string): void {
+        
     }
-
-    eventEnqueued() {
+    dispatchLoopStart(): void {
+        
     }
-
-    dispatchLoopStart() {
+    startingModelEventLoop(modelId: string, entityKey: string, initiatingEventType: string): void {
+        
     }
-
-    startingModelEventLoop() {
+    preProcessingModel(): void {
+        
     }
-
-    preProcessingModel() {
+    dispatchingEvents(): void {
+        
     }
-
-    dispatchingEvents() {
+    dispatchingAction(): void {
+        
     }
-
-    dispatchingAction() {
+    dispatchingEvent(eventType: string, stage: string): void {
+        
     }
-
-    dispatchingEvent() {
+    dispatchingViaDirective(functionName: string): void {
+        
     }
-
-    dispatchingViaDirective() {
+    finishDispatchingEvent(): void {
+        
     }
-
-    dispatchingViaConvention() {
+    postProcessingModel(): void {
+        
     }
-
-    finishDispatchingEvent() {
+    endingModelEventLoop(): void {
+        
     }
-
-    postProcessingModel() {
+    dispatchingModelUpdates(modelId: string, model: any): void {
+        
     }
-
-    endingModelEventLoop() {
+    dispatchLoopEnd(): void {
+        
     }
-
-    dispatchingModelUpdates() {
-    }
-
-    dispatchLoopEnd() {
-    }
-
-    halted() {
+    halted(modelIds: string[], err: string): void {
+        
     }
 }

@@ -1,7 +1,6 @@
 import {EventTransformConfig, PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
 import {EventConst, TestEvent, TestImmutableModel} from './testApi/testModel';
-import {ObservationStage} from 'esp-js';
-import {EventEnvelope} from 'esp-js/src';
+import {ObservationStage, EventEnvelope} from 'esp-js';
 import {ObjectEventTransformsSpy} from './testApi/eventTransforms';
 
 describe('Event Transforms', () => {

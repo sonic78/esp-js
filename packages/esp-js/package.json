@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "7.0.2",
+  "version": "8.0.14-next.0",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",

@@ -7,7 +7,6 @@ esp-js-*.tgz
 .tsbuild
 !dist
 examples
-src
 tests
 jest.config.js
 webpack.config.js

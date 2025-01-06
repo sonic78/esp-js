@@ -31,6 +31,8 @@ export interface InputEvent<TModel, TEvent, TEntity = unknown> {
     readonly event: TEvent;
     /**
      * The top level model the event was addressed to.
+     * Note: this will be a Proxy, the same as PolimerModel.getEspPolimerImmutableModelProxy().
+     * This allows for async event transform logic to close over a pointer to the latest model state.
      */
     readonly model: TModel;
     /**

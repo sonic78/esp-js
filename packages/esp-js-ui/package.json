@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "7.0.2",
+  "version": "8.0.14-next.0",
   "description": "ESP-JS-UI Package",
   "main": ".dist/esp-js-ui.js",
   "types": "esp-js-ui.d.ts",
@@ -25,13 +25,13 @@
   },
   "dependencies": {
     "classnames": "^2.2.6",
-    "esp-js": "^7.0.2",
-    "esp-js-di": "^7.0.2",
-    "esp-js-metrics": "^7.0.2",
-    "esp-js-react": "^7.0.2",
-    "esp-js-rx": "^7.0.2",
+    "esp-js": "^8.0.14-next.0",
+    "esp-js-di": "^8.0.14-next.0",
+    "esp-js-metrics": "^8.0.14-next.0",
+    "esp-js-react": "^8.0.14-next.0",
+    "esp-js-rx": "^8.0.14-next.0",
     "query-string": "6.13.1",
-    "react": "^16.14.0",
+    "react": "^18.3.1",
     "rxjs": "^6.6.6",
     "uuid": "^8.3.2"
   },
@@ -41,7 +41,7 @@
     "esp-js-di": "^7.0.0",
     "esp-js-react": "^7.0.0",
     "esp-js-rx": "^7.0.0",
-    "react": "^16.0.0",
+    "react": "^18.0.0 || ^19.0.0",
     "rxjs": "^6.0.0"
   }
 }

@@ -17,112 +17,31 @@
 // notice_end
 
 import * as espReact from '../src/index';
-import {
-    SmartComponent,
-    ViewBinder,
-    viewBinding,
-    getEspReactRenderModel,
-    GetEspReactRenderModelConsts,
-    shouldUpdateMixin,
-
-    useRouter,
-    RouterContext,
-    RouterProvider,
-
-    useGetModelId,
-    GetModelIdContext,
-
-    PublishEventContext,
-    usePublishEvent,
-
-    PublishModelEventContext,
-    usePublishModelEvent,
-
-    PublishModelEventWithEntityKeyContext,
-    usePublishModelEventWithEntityKey,
-} from '../src';
 
 describe('index exports', () => {
-    it('should export RouterProvider', () => {
-        expect(espReact.RouterProvider).toBeDefined();
-        expect(RouterProvider).toBeDefined();
-    });
-
-    it('should export RouterContext', () => {
-        expect(espReact.RouterContext).toBeDefined();
-        expect(RouterContext).toBeDefined();
-    });
-
-    it('should export SmartComponent', () => {
-        expect(espReact.SmartComponent).toBeDefined();
-        expect(SmartComponent).toBeDefined();
-    });
-
-    it('should export ViewBinder', () => {
-        expect(espReact.ViewBinder).toBeDefined();
-        expect(ViewBinder).toBeDefined();
-    });
-
-    it('should export viewBinding', () => {
+    it('check exports', () => {
         expect(espReact.viewBinding).toBeDefined();
-        expect(viewBinding).toBeDefined();
-    });
-
-    it('should export getEspReactRenderModel decorator', () => {
-        expect(espReact.getEspReactRenderModel).toBeDefined();
-        expect(getEspReactRenderModel).toBeDefined();
-    });
-
-    it('should export GetEspReactRenderModelConsts', () => {
-        expect(espReact.GetEspReactRenderModelConsts).toBeDefined();
-        expect(GetEspReactRenderModelConsts).toBeDefined();
-    });
-
-    it('should export shouldUpdateMixin', () => {
-        expect(espReact.shouldUpdateMixin).toBeDefined();
-        expect(shouldUpdateMixin).toBeDefined();
-    });
-
-    describe('hooks', () => {
-
-        it('should export useRouter and related', () => {
-            expect(espReact.useRouter).toBeDefined();
-            expect(useRouter).toBeDefined();
-
-            expect(espReact.RouterContext).toBeDefined();
-            expect(RouterContext).toBeDefined();
-        });
-
-        it('should export useGetModelId and related', () => {
-            expect(espReact.useGetModelId).toBeDefined();
-            expect(useGetModelId).toBeDefined();
-
-            expect(espReact.GetModelIdContext).toBeDefined();
-            expect(GetModelIdContext).toBeDefined();
-        });
-
-        it('should export usePublishEvent and related', () => {
-            expect(espReact.usePublishEvent).toBeDefined();
-            expect(usePublishEvent).toBeDefined();
-
-            expect(espReact.PublishEventContext).toBeDefined();
-            expect(PublishEventContext).toBeDefined();
-        });
-
-        it('should export usePublishModelEvent and related', () => {
-            expect(espReact.usePublishModelEvent).toBeDefined();
-            expect(usePublishModelEvent).toBeDefined();
-
-            expect(espReact.PublishModelEventContext).toBeDefined();
-            expect(PublishModelEventContext).toBeDefined();
-        });
-
-        it('should export usePublishModelEventWithEntityKey and related', () => {
-            expect(espReact.usePublishModelEventWithEntityKey).toBeDefined();
-            expect(usePublishModelEventWithEntityKey).toBeDefined();
-
-            expect(espReact.PublishModelEventContext).toBeDefined();
-            expect(PublishModelEventWithEntityKeyContext).toBeDefined();
-        });
+        expect(espReact.ViewBinder).toBeDefined();
+        expect(espReact.DEFAULT_VIEW_KEY).toBeDefined();
+        expect(espReact.createViewForModel).toBeDefined();
+        expect(espReact.connect).toBeDefined();
+        expect(espReact.ConnectableComponent).toBeDefined();
+        expect(espReact.useSyncModelWithSelector).toBeDefined();
+        expect(espReact.syncModelWithSelectorOptions).toBeDefined();
+        expect(espReact.RouterProvider).toBeDefined();
+        expect(espReact.EspRouterContextProvider).toBeDefined();
+        expect(espReact.RouterContext).toBeDefined();
+        expect(espReact.useRouter).toBeDefined();
+        expect(espReact.PublishEventContext).toBeDefined();
+        expect(espReact.usePublishEvent).toBeDefined();
+        expect(espReact.useGetModelId).toBeDefined();
+        expect(espReact.GetModelIdContext).toBeDefined();
+        expect(espReact.useGetModel).toBeDefined();
+        expect(espReact.GetModelContext).toBeDefined();
+        expect(espReact.PublishModelEventContext).toBeDefined();
+        expect(espReact.usePublishModelEvent).toBeDefined();
+        expect(espReact.PublishModelEventWithEntityKeyContext).toBeDefined();
+        expect(espReact.usePublishModelEventWithEntityKey).toBeDefined();
+        expect(espReact.EspModelContextProvider).toBeDefined();
     });
 });
