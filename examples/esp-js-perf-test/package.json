@@ -1,0 +1,25 @@
+{
+  "name": "esp-js-perf-test",
+  "version": "8.0.16",
+  "private": true,
+  "scripts": {
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "test": "nps test",
+    "test-ci": "echo no tests to run",
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "esp-js": "^8.0.16",
+    "esp-js-polimer": "^8.0.16"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  }
+}

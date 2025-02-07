@@ -38,6 +38,7 @@ const packagesExclusions = [
     'esp-js-ui-rxcompat',
     'esp-js-api',
     'esp-js-di-api',
+    'esp-js-perf-test',
     'esp-js-react-agile-board',
 ];
 
