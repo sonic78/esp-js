@@ -1,6 +1,6 @@
 {
   "name": "esp-js-rx",
-  "version": "8.0.16",
+  "version": "8.1.0-next.0",
   "description": "ESP-JS-RX Package",
   "keywords": [
     "rxjs"
@@ -27,7 +27,7 @@
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
-    "esp-js": "^8.0.16",
+    "esp-js": "^8.1.0-next.0",
     "rxjs": "^6.6.6"
   },
   "peerDependencies": {
