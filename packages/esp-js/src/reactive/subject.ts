@@ -87,6 +87,7 @@ class Observers<T> {
     private _working = false;
     private _pendingAdds: Observer<T>[] = [];
     private _pendingRemoves: Observer<T>[] = [];
+
     public get size() {
         return this._observers.size;
     }
