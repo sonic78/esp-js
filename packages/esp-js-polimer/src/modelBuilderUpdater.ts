@@ -125,6 +125,10 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
     private _initialModel: TModel;
     private _stateSaveHandler: (model: TModel) => any;
 
+    public static create<TModel extends ImmutableModel, TPersistedModelState = {}> (router: Router) {
+        return new PolimerModelBuilder<TModel, TPersistedModelState>(router);
+    }
+
     constructor(private _router: Router) {
         super();
     }

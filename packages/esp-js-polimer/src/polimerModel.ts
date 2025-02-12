@@ -230,7 +230,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
     @observeEvent(PolimerEvents.disposeModel)
     public dispose() {
-        logger.debug(`Disposing PolimerModel<> ${this._modelId}`);
+        logger.verbose(`Disposing PolimerModel<> ${this._modelId}`);
         this._router.removeModel(this.modelId);
         this._disposablesKeyedOnObjectScannedAtWireup.forEach(d => (d.dispose()));
         super.dispose();
