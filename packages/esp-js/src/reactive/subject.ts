@@ -19,19 +19,17 @@
 import {Observable} from './observable';
 import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
-import {utils} from '../system';
 
 export class Subject<T> extends Observable<T> {
     private readonly _cacheLastValue: boolean;
     private _lastValue: any;
-    private _observers: Observer<T>[];
     private _hasComplete: boolean;
+    private _observers: Map<object, Observer<T>> = new Map();
 
     constructor(cacheLastValue = false) {
         super(undefined);
         this._cacheLastValue = cacheLastValue;
         this._lastValue = undefined;
-        this._observers = [];
         this._hasComplete = false;
         // the base object Observable requires _subscribe to be bound to this.
         this._subscribe = <Subscribe<T>>subscribe.bind(this);
@@ -42,9 +40,7 @@ export class Subject<T> extends Observable<T> {
             if (this._cacheLastValue) {
                 this._lastValue = item;
             }
-            let os = this._observers.slice(0);
-            for (let i = 0, len = os.length; i < len; i++) {
-                let observer = os[i];
+            for (const observer of this._observers.values()) {
                 observer.onNext(item);
             }
         }
@@ -53,27 +49,25 @@ export class Subject<T> extends Observable<T> {
     onCompleted() {
         if (!this._hasComplete) {
             this._hasComplete = true;
-            let os = this._observers.slice(0);
-            for (let i = 0, len = os.length; i < len; i++) {
-                let observer = os[i];
+            for (const observer of this._observers.values()) {
                 observer.onCompleted();
             }
         }
     }
 
     getObserverCount() {
-        return this._observers.length;
+        return this._observers.size;
     }
 }
 
 function subscribe<T>(observer: Observer<T>) {
-    this._observers.push(observer);
+    this._observers.set(observer, observer);
     if (this._cacheLastValue && typeof this._lastValue !== 'undefined') {
         observer.onNext(this._lastValue);
     }
     return {
         dispose: () => {
-            utils.removeAll(this._observers, observer);
+            this._observers.delete(observer);
         }
     };
 }

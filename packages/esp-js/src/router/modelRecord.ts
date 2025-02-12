@@ -107,12 +107,14 @@ export class ModelRecord {
     public getOrCreateEventStreamsRegistration(eventType: string, dispatchObservable: Observable<EventEnvelope<any, any>>): EventStreamsRegistration {
         let eventStreamsRegistration = this._eventStreams.get(eventType);
         if (!eventStreamsRegistration) {
-            let eventStream =  dispatchObservable.filter(
+            const modelStream = dispatchObservable.filter(
+                envelope => envelope.modelId === this.modelId
+            ).share(false);
+            const eventStream =  modelStream.filter(
                 envelope =>
                     envelope.dispatchType === DispatchType.Event &&
-                    envelope.modelId === this.modelId &&
                     envelope.eventType === eventType
-            );
+            ).share(false);
             eventStreamsRegistration = {
                 streams: {
                     preview: eventStream
